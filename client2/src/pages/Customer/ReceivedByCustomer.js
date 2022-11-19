@@ -37,7 +37,7 @@ export default function ReceivedByCustomer(props) {
         const prodState = await supplyChainContract.methods
           .fetchProductState(i)
           .call();
-
+//status of the product 
         if (prodState === "8") {
           const prodData = [];
           const a = await supplyChainContract.methods
@@ -164,7 +164,7 @@ export default function ReceivedByCustomer(props) {
                                     key={prod[0][0]}
                                     onClick={() => handleClick(prod)}
                                   >
-                                    <TableCell
+                                    <TableCell 
                                       className={classes.TableCell}
                                       component="th"
                                       align="left"
