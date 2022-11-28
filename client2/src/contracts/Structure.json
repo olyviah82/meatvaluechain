@@ -7,7 +7,7 @@
   "sourceMap": "69:1632:1:-;;132:2:-1;166:7;155:9;146:7;137:37;255:7;249:14;246:1;241:23;235:4;232:33;222:2;;269:9;222:2;293:9;290:1;283:20;323:4;314:7;306:22;347:7;338;331:24",
   "deployedSourceMap": "69:1632:1:-;;;;;;;;",
   "source": "// SPDX-License-Identifier: MIT\r\npragma solidity >=0.4.21 <0.9.0;\r\n\r\nlibrary Structure {\r\n    enum State {\r\n        Manufactured,\r\n        PurchasedByThirdParty,\r\n        ShippedByFarmer,\r\n        ReceivedByThirdParty,\r\n        PurchasedByCustomer,\r\n        ShippedByThirdParty,\r\n        ReceivedByDeliveryHub,\r\n        ShippedByDeliveryHub,\r\n        ReceivedByCustomer\r\n    }\r\n    struct FarmDetails {\r\n        address farmer;\r\n        string farmerName;\r\n        string farmerDetails;\r\n        string farmerLongitude;\r\n        string farmerLatitude;\r\n        uint256 manufacturedDate;\r\n    }\r\n    struct ProductDetails {\r\n        string productType;\r\n        string SlaughterHouse;\r\n        string AverageWeight;\r\n        uint256 Age;\r\n        string CarcassWeight;\r\n        string VetId;\r\n        uint256 productCode;\r\n        uint256 productPrice;\r\n        string productCategory;\r\n    }\r\n    struct ThirdPartyDetails {\r\n        address thirdParty;\r\n        string thirdPartyLongitude;\r\n        string thirdPartyLatitude;\r\n    }\r\n    struct DeliveryHubDetails {\r\n        address deliveryHub;\r\n        string deliveryHubLongitude;\r\n        string deliveryHubLatitude;\r\n    }\r\n    struct Product {\r\n        uint256 uid;\r\n        uint256 sku;\r\n        address owner;\r\n        State productState;\r\n        FarmDetails farmer;\r\n        ThirdPartyDetails thirdparty;\r\n        ProductDetails productdet;\r\n        DeliveryHubDetails deliveryhub;\r\n        address customer;\r\n        string transaction;\r\n    }\r\n\r\n    struct ProductHistory {\r\n        Product[] history;\r\n    }\r\n\r\n    struct Roles {\r\n        bool Farmer;\r\n        bool ThirdParty;\r\n        bool DeliveryHub;\r\n        bool Customer;\r\n    }\r\n}\r\n",
-  "sourcePath": "C:\\Users\\Jane\\Desktop\\eth-supplychain-dapp\\contracts\\Structure.sol",
+  "sourcePath": "C:\\Users\\Jane\\Desktop\\meatvaluechain\\contracts\\Structure.sol",
   "ast": {
     "absolutePath": "project:/contracts/Structure.sol",
     "exportedSymbols": {
@@ -2353,7 +2353,7 @@
   },
   "networks": {},
   "schemaVersion": "3.4.10",
-  "updatedAt": "2022-11-28T03:16:12.435Z",
+  "updatedAt": "2022-11-28T07:46:27.282Z",
   "devdoc": {
     "methods": {}
   },
