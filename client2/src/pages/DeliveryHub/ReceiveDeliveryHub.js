@@ -68,7 +68,7 @@ export default function ReceiveDeliveryHub(props) {
   const handleSetTxhash = async (id, hash) => {
     await supplyChainContract.methods
       .setTransactionHash(id, hash)
-      .send({ from: roles.manufacturer, gas: 900000 });
+      .send({ from: roles.farmer, gas: 900000 });
   };
 
   const handleReceiveButton = async (id, long, lat) => {

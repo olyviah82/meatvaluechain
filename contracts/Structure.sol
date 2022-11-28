@@ -5,7 +5,7 @@ library Structure {
     enum State {
         Manufactured,
         PurchasedByThirdParty,
-        ShippedByManufacturer,
+        ShippedByFarmer,
         ReceivedByThirdParty,
         PurchasedByCustomer,
         ShippedByThirdParty,
@@ -13,16 +13,21 @@ library Structure {
         ShippedByDeliveryHub,
         ReceivedByCustomer
     }
-    struct ManufactureDetails {
-        address manufacturer;
-        string manufacturerName;
-        string manufacturerDetails;
-        string manufacturerLongitude;
-        string manufacturerLatitude;
+    struct FarmDetails {
+        address farmer;
+        string farmerName;
+        string farmerDetails;
+        string farmerLongitude;
+        string farmerLatitude;
         uint256 manufacturedDate;
     }
     struct ProductDetails {
-        string productName;
+        string productType;
+        string SlaughterHouse;
+        string AverageWeight;
+        uint256 Age;
+        string CarcassWeight;
+        string VetId;
         uint256 productCode;
         uint256 productPrice;
         string productCategory;
@@ -42,7 +47,7 @@ library Structure {
         uint256 sku;
         address owner;
         State productState;
-        ManufactureDetails manufacturer;
+        FarmDetails farmer;
         ThirdPartyDetails thirdparty;
         ProductDetails productdet;
         DeliveryHubDetails deliveryhub;
@@ -55,7 +60,7 @@ library Structure {
     }
 
     struct Roles {
-        bool Manufacturer;
+        bool Farmer;
         bool ThirdParty;
         bool DeliveryHub;
         bool Customer;

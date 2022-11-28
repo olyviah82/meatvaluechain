@@ -97,7 +97,7 @@ export default function PurchaseCustomer(props) {
   const handleSetTxhash = async (id, hash) => {
     await supplyChainContract.methods
       .setTransactionHash(id, hash)
-      .send({ from: roles.manufacturer, gas: 900000 });
+      .send({ from: roles.farmer, gas: 900000 });
   };
 
   return (
@@ -138,7 +138,7 @@ export default function PurchaseCustomer(props) {
                             className={classes.TableHead}
                             align="center"
                           >
-                            Manufacturer
+                            Farmer
                           </TableCell>
                           <TableCell
                             className={classes.TableHead}

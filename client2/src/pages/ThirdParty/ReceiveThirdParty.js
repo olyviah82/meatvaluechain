@@ -14,27 +14,38 @@ import TablePagination from "@material-ui/core/TablePagination";
 import { useStyles } from "../../components/Styles";
 import clsx from "clsx";
 import Loader from "../../components/Loader";
+import { usePosition } from 'use-position'
 
-export default function ReceiveCustomer(props) {
+
+export default function ReceiveThirdParty(props) {
   const supplyChainContract = props.supplyChainContract;
   const { roles } = useRole();
   const [count, setCount] = React.useState(0);
   const [allReceiveProducts, setAllReceiveProducts] = React.useState([]);
   const [modalData, setModalData] = useState([]);
   const [open, setOpen] = useState(false);
-  const classes = useStyles();
   const [loading, setLoading] = React.useState(false);
-  const navItem = [
-    ["Purchase Product", "/Customer/buy"],
-    ["Receive Product", "/Customer/receive"],
-    ["Your Products", "/Customer/allReceived"],
-  ];
+  const classes = useStyles();
   const [alertText, setalertText] = React.useState("");
+  const navItem = [
+    ["Buy Product", "/ThirdParty/allProducts"],
+    ["Receive Product", "/ThirdParty/receive"],
+    ["Ship Products", "/ThirdParty/ship"],
+  ];
+  // const { latitude, longitude } = usePosition(watch, {
+  //   enableHighAccuracy: true,
+  // })
+  // console.log(latitude, longitude)
+  // const latitude_s=String(latitude);
+  // const longitude_s=String(longitude);
+
+  // console.log(latitude_s, longitude_s)
   React.useEffect(() => {
     (async () => {
       setLoading(true);
       const cnt = await supplyChainContract.methods.fetchProductCount().call();
       setCount(cnt);
+     
     })();
 
     (async () => {
@@ -44,7 +55,7 @@ export default function ReceiveCustomer(props) {
           .fetchProductState(i)
           .call();
 
-        if (prodState === "7") {
+        if (prodState === "2") {
           const prodData = [];
           const a = await supplyChainContract.methods
             .fetchProductPart1(i, "product", 0)
@@ -66,18 +77,19 @@ export default function ReceiveCustomer(props) {
     })();
   }, [count]);
 
-  const handleReceiveButton = async (id) => {
+  const handleReceiveButton = async (id, long, lat) => {
     try{
       await supplyChainContract.methods
-      .receiveByCustomer(parseInt(id))
-      .send({ from: roles.customer, gas: 1000000 })
+      .receiveByThirdParty(parseInt(id), long, lat)
+      .send({ from: roles.thirdparty, gas: 1000000 })
       .on("transactionHash", function (hash) {
         handleSetTxhash(id, hash);
       });
+    
     setCount(0);
     setOpen(false);
     }catch{
-      setalertText("You are not the owner of the Product");
+      setalertText("You are not the owner of the product");
     }
     
   };
@@ -104,12 +116,13 @@ export default function ReceiveCustomer(props) {
 
   const handleClick = async (prod) => {
     await setModalData(prod);
+    
     setOpen(true);
   };
 
   return (
     <div classname={classes.pageWrap}>
-      <Navbar pageTitle={"Customer"} navItems={navItem}>
+      <Navbar pageTitle={"Third Party"} navItems={navItem}>
         {loading ? (
           <Loader />
         ) : (
@@ -119,7 +132,7 @@ export default function ReceiveCustomer(props) {
               open={open}
               handleClose={handleClose}
               handleReceiveButton={handleReceiveButton}
-              aText={alertText}
+              aText = {alertText}
             />
 
             <h1 className={classes.pageHeading}>Products to be Received</h1>

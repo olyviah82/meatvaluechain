@@ -120,10 +120,10 @@ export default function PersistentDrawerLeft({ pageTitle,navItems, children }) {
           >
             <img
               alt="."
-              src="/logo.png"
+              src="/logo.jpeg"
               style={{ height: "45px", width: "auto" }}
             />
-            &nbsp;SupplyChain-Dapp
+            &nbsp;MeatSupplyChain-Dapp
           </Typography>
         </Toolbar>
       </AppBar>

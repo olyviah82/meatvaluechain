@@ -4,7 +4,7 @@ pragma solidity >=0.4.21 <0.9.0;
 import "./Structure.sol";
 
 contract SupplyChain {
-    event ManufacturerAdded(address indexed _account);
+    event FarmerAdded(address indexed _account);
 
     //product code
     uint256 public uid;
@@ -16,16 +16,16 @@ contract SupplyChain {
     mapping(uint256 => Structure.ProductHistory) productHistory;
     mapping(address => Structure.Roles) roles;
 
-    function hasManufacturerRole(address _account) public view returns (bool) {
+    function hasFarmerRole(address _account) public view returns (bool) {
         require(_account != address(0));
-        return roles[_account].Manufacturer;
+        return roles[_account].Farmer;
     }
 
-    function addManufacturerRole(address _account) public {
+    function addFarmerRole(address _account) public {
         require(_account != address(0));
-        require(!hasManufacturerRole(_account));
+        require(!hasFarmerRole(_account));
 
-        roles[_account].Manufacturer = true;
+        roles[_account].Farmer = true;
     }
 
     function hasThirdPartyRole(address _account) public view returns (bool) {
@@ -72,7 +72,7 @@ contract SupplyChain {
 
     event Manufactured(uint256 uid);
     event PurchasedByThirdParty(uint256 uid);
-    event ShippedByManufacturer(uint256 uid);
+    event ShippedByFarmer(uint256 uid);
     event ReceivedByThirdParty(uint256 uid);
     event PurchasedByCustomer(uint256 uid);
     event ShippedByThirdParty(uint256 uid);
@@ -90,9 +90,9 @@ contract SupplyChain {
         _;
     }
 
-    modifier shippedByManufacturer(uint256 _uid) {
+    modifier shippedByFarmer(uint256 _uid) {
         require(
-            products[_uid].productState == Structure.State.ShippedByManufacturer
+            products[_uid].productState == Structure.State.ShippedByFarmer
         );
         _;
     }
@@ -167,41 +167,54 @@ contract SupplyChain {
 
     function manufactureProductInitialize(
         Structure.Product memory product,
-        string memory productName,
-        uint256 productCode,
-        uint256 productPrice,
-        string memory productCategory
+        string memory productType,
+        string memory SlaughterHouse,
+        string memory AverageWeight,
+        uint256 Age,
+        string memory CarcassWeight,
+        string memory VetId,
+            uint256 productPrice
     ) internal pure {
-        product.productdet.productName = productName;
-        product.productdet.productCode = productCode;
+        product.productdet.productType = productType;
+        product.productdet.SlaughterHouse = SlaughterHouse;
+        product.productdet.AverageWeight = AverageWeight;
+        product.productdet.Age=Age;
+        product.productdet.CarcassWeight=CarcassWeight;
+        product.productdet.VetId=VetId;
+        // product.productdet.productCode = productCode;
         product.productdet.productPrice = productPrice;
-        product.productdet.productCategory = productCategory;
+        //product.productdet.productCategory = productCategory;
     }
 
     ///@dev STEP 1 : Manufactured a product.
     function manufactureProduct(
-        string memory manufacturerName,
-        string memory manufacturerDetails,
-        string memory manufacturerLongitude,
-        string memory manufacturerLatitude,
-        string memory productName,
-        uint256 productCode,
-        uint256 productPrice,
-        string memory productCategory
+        string memory farmerName,
+        string memory farmerDetails,
+        string memory farmerLongitude,
+        string memory farmerLatitude,
+        string memory productType,
+        string memory SlaughterHouse,
+        string memory AverageWeight,
+        uint256 Age,
+        string memory CarcassWeight,
+        string memory VetId,
+        //uint256 productCode,
+        uint256 productPrice
+        //string memory productCategory
     ) public {
-        require(hasManufacturerRole(msg.sender));
+        require(hasFarmerRole(msg.sender));
         uint256 _uid = uid;
         Structure.Product memory product;
         product.sku = sku;
         product.uid = _uid;
-        product.manufacturer.manufacturerName = manufacturerName;
-        product.manufacturer.manufacturerDetails = manufacturerDetails;
-        product.manufacturer.manufacturerLongitude = manufacturerLongitude;
-        product.manufacturer.manufacturerLatitude = manufacturerLatitude;
-        product.manufacturer.manufacturedDate = block.timestamp;
+        product.farmer.farmerName = farmerName;
+        product.farmer.farmerDetails = farmerDetails;
+        product.farmer.farmerLongitude = farmerLongitude;
+        product.farmer.farmerLatitude = farmerLatitude;
+        product.farmer.manufacturedDate = block.timestamp;
 
         product.owner = msg.sender;
-        product.manufacturer.manufacturer = msg.sender;
+        product.farmer.farmer = msg.sender;
 
         manufactureEmptyInitialize(product);
 
@@ -209,10 +222,15 @@ contract SupplyChain {
 
         manufactureProductInitialize(
             product,
-            productName,
-            productCode,
-            productPrice,
-            productCategory
+            productType,
+            SlaughterHouse,
+            AverageWeight,
+            Age,
+            CarcassWeight,
+            VetId,
+            //productCode,
+            productPrice
+            //productCategory
         );
 
         products[_uid] = product;
@@ -238,23 +256,23 @@ contract SupplyChain {
     ///@dev STEP 3 : Shipping of purchased product to Third Party.
     function shipToThirdParty(uint256 _uid)
         public
-        verifyAddress(products[_uid].manufacturer.manufacturer)
+        verifyAddress(products[_uid].farmer.farmer)
     {
-        require(hasManufacturerRole(msg.sender));
-        products[_uid].productState = Structure.State.ShippedByManufacturer;
+        require(hasFarmerRole(msg.sender));
+        products[_uid].productState = Structure.State.ShippedByFarmer;
         productHistory[_uid].history.push(products[_uid]);
 
-        emit ShippedByManufacturer(_uid);
+        emit ShippedByFarmer(_uid);
     }
 
-    ///@dev STEP 4 : Received the purchased product shipped by Manufacturer.
+    ///@dev STEP 4 : Received the purchased product shipped by Farmer.
     function receiveByThirdParty(
         uint256 _uid,
         string memory thirdPartyLongitude,
         string memory thirdPartyLatitude
     )
         public
-        shippedByManufacturer(_uid)
+        shippedByFarmer(_uid)
         verifyAddress(products[_uid].thirdparty.thirdParty)
     {
         require(hasThirdPartyRole(msg.sender));
@@ -369,11 +387,11 @@ contract SupplyChain {
             product.uid,
             product.sku,
             product.owner,
-            product.manufacturer.manufacturer,
-            product.manufacturer.manufacturerName,
-            product.manufacturer.manufacturerDetails,
-            product.manufacturer.manufacturerLongitude,
-            product.manufacturer.manufacturerLatitude
+            product.farmer.farmer,
+            product.farmer.farmerName,
+            product.farmer.farmerDetails,
+            product.farmer.farmerLongitude,
+            product.farmer.farmerLatitude
         );
     }
 
@@ -388,7 +406,7 @@ contract SupplyChain {
         returns (
             uint256,
             string memory,
-            uint256,
+            string memory,
             uint256,
             string memory,
             Structure.State,
@@ -405,9 +423,9 @@ contract SupplyChain {
             product = productHistory[_uid].history[i];
         }
         return (
-            product.manufacturer.manufacturedDate,
-            product.productdet.productName,
-            product.productdet.productCode,
+            product.farmer.manufacturedDate,
+            product.productdet.productType,
+            product.productdet.AverageWeight,
             product.productdet.productPrice,
             product.productdet.productCategory,
             product.productState,

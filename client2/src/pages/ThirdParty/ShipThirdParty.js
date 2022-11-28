@@ -15,7 +15,7 @@ import ProductModal from "../../components/Modal";
 import clsx from "clsx";
 import Loader from "../../components/Loader";
 
-export default function ShipDeliveryHub(props) {
+export default function ShipThirdParty(props) {
   const classes = useStyles();
   const supplyChainContract = props.supplyChainContract;
   const { roles } = useRole();
@@ -23,8 +23,9 @@ export default function ShipDeliveryHub(props) {
   const [allSoldProducts, setAllSoldProducts] = React.useState([]);
   const [loading, setLoading] = React.useState(false);
   const navItem = [
-    ["Receive Product", "/DeliveryHub/receive"],
-    ["Ship Product", "/DeliveryHub/ship"],
+    ["Buy Product", "/ThirdParty/allProducts"],
+    ["Receive Product", "/ThirdParty/receive"],
+    ["Ship Products", "/ThirdParty/ship"],
   ];
   const [alertText, setalertText] = React.useState("");
   React.useEffect(() => {
@@ -32,6 +33,7 @@ export default function ShipDeliveryHub(props) {
       setLoading(true);
       const cnt = await supplyChainContract.methods.fetchProductCount().call();
       setCount(cnt);
+      
     })();
 
     (async () => {
@@ -41,7 +43,7 @@ export default function ShipDeliveryHub(props) {
           .fetchProductState(i)
           .call();
 
-        if (prodState === "6") {
+        if (prodState === "4") {
           const prodData = [];
           const a = await supplyChainContract.methods
             .fetchProductPart1(i, "product", 0)
@@ -72,15 +74,16 @@ export default function ShipDeliveryHub(props) {
   const handleShipButton = async (id) => {
     try{
       await supplyChainContract.methods
-      .shipByDeliveryHub(id)
-      .send({ from: roles.deliveryhub, gas: 1000000 })
+      .shipByThirdParty(id)
+      .send({ from: roles.thirdparty, gas: 1000000 })
       .on("transactionHash", function (hash) {
         handleSetTxhash(id, hash);
       });
-    setCount(0);
+     setCount(0);
     }catch{
-      setalertText("You are not the owner of the Product");
+      setalertText("You are not the owner of the Product")
     }
+   
   };
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
@@ -103,11 +106,11 @@ export default function ShipDeliveryHub(props) {
     await setModalData(prod);
     setOpen(true);
   };
-
+  
   return (
     <>
       <div classname={classes.pageWrap}>
-        <Navbar pageTitle={"Delivery Hub"} navItems={navItem}>
+        <Navbar pageTitle={"Third Party"} navItems={navItem}>
           {loading ? (
             <Loader />
           ) : (

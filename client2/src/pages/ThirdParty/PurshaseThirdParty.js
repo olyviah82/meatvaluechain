@@ -1,7 +1,6 @@
-import React, { useState } from "react";
+import React from "react";
 import Navbar from "../../components/Navbar";
 import Button from "@material-ui/core/Button";
-import ProductModal from "../../components/Modal";
 import { useRole } from "../../context/RoleDataContext";
 import Table from "@material-ui/core/Table";
 import TableBody from "@material-ui/core/TableBody";
@@ -12,29 +11,28 @@ import TableRow from "@material-ui/core/TableRow";
 import Paper from "@material-ui/core/Paper";
 import TablePagination from "@material-ui/core/TablePagination";
 import { useStyles } from "../../components/Styles";
+import ProductModal from "../../components/Modal";
 import clsx from "clsx";
 import Loader from "../../components/Loader";
 
-export default function ReceiveCustomer(props) {
+export default function PurchaseThirdParty(props) {
+  const classes = useStyles();
   const supplyChainContract = props.supplyChainContract;
   const { roles } = useRole();
   const [count, setCount] = React.useState(0);
-  const [allReceiveProducts, setAllReceiveProducts] = React.useState([]);
-  const [modalData, setModalData] = useState([]);
-  const [open, setOpen] = useState(false);
-  const classes = useStyles();
+  const [allProducts, setAllProducts] = React.useState([]);
   const [loading, setLoading] = React.useState(false);
   const navItem = [
-    ["Purchase Product", "/Customer/buy"],
-    ["Receive Product", "/Customer/receive"],
-    ["Your Products", "/Customer/allReceived"],
+    ["Buy Product", "/ThirdParty/allProducts"],
+    ["Receive Product", "/ThirdParty/receive"],
+    ["Ship Products", "/ThirdParty/ship"],
   ];
-  const [alertText, setalertText] = React.useState("");
   React.useEffect(() => {
     (async () => {
       setLoading(true);
       const cnt = await supplyChainContract.methods.fetchProductCount().call();
       setCount(cnt);
+    
     })();
 
     (async () => {
@@ -44,7 +42,7 @@ export default function ReceiveCustomer(props) {
           .fetchProductState(i)
           .call();
 
-        if (prodState === "7") {
+        if (prodState === "0") {
           const prodData = [];
           const a = await supplyChainContract.methods
             .fetchProductPart1(i, "product", 0)
@@ -61,32 +59,10 @@ export default function ReceiveCustomer(props) {
           arr.push(prodData);
         }
       }
-      setAllReceiveProducts(arr);
+      setAllProducts(arr);
       setLoading(false);
     })();
   }, [count]);
-
-  const handleReceiveButton = async (id) => {
-    try{
-      await supplyChainContract.methods
-      .receiveByCustomer(parseInt(id))
-      .send({ from: roles.customer, gas: 1000000 })
-      .on("transactionHash", function (hash) {
-        handleSetTxhash(id, hash);
-      });
-    setCount(0);
-    setOpen(false);
-    }catch{
-      setalertText("You are not the owner of the Product");
-    }
-    
-  };
-
-  const handleSetTxhash = async (id, hash) => {
-    await supplyChainContract.methods
-      .setTransactionHash(id, hash)
-      .send({ from: roles.farmer, gas: 900000 });
-  };
 
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
@@ -100,6 +76,9 @@ export default function ReceiveCustomer(props) {
     setPage(0);
   };
 
+  const [open, setOpen] = React.useState(false);
+  const [modalData, setModalData] = React.useState([]);
+
   const handleClose = () => setOpen(false);
 
   const handleClick = async (prod) => {
@@ -107,9 +86,25 @@ export default function ReceiveCustomer(props) {
     setOpen(true);
   };
 
+  const handleSetTxhash = async (id, hash) => {
+    await supplyChainContract.methods
+      .setTransactionHash(id, hash)
+      .send({ from: roles.manufacturer, gas: 900000 });
+  };
+
+  const handleBuyButton = async (id) => {
+    await supplyChainContract.methods
+      .purchaseByThirdParty(id)
+      .send({ from: roles.thirdparty, gas: 1000000 })
+      .on("transactionHash", function (hash) {
+        handleSetTxhash(id, hash);
+      });
+    setCount(0);
+  };
+
   return (
     <div classname={classes.pageWrap}>
-      <Navbar pageTitle={"Customer"} navItems={navItem}>
+      <Navbar pageTitle={"Third Party"} navItems={navItem}>
         {loading ? (
           <Loader />
         ) : (
@@ -118,14 +113,10 @@ export default function ReceiveCustomer(props) {
               prod={modalData}
               open={open}
               handleClose={handleClose}
-              handleReceiveButton={handleReceiveButton}
-              aText={alertText}
             />
 
-            <h1 className={classes.pageHeading}>Products to be Received</h1>
-            <h3 className={classes.tableCount}>
-              Total : {allReceiveProducts.length}
-            </h3>
+            <h1 className={classes.pageHeading}>All Products</h1>
+            <h3 className={classes.tableCount}>Total : {allProducts.length}</h3>
 
             <div>
               <Paper className={classes.TableRoot}>
@@ -161,13 +152,13 @@ export default function ReceiveCustomer(props) {
                           className={clsx(classes.TableHead)}
                           align="center"
                         >
-                          RECEIVE
+                          Buy
                         </TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {allReceiveProducts.length !== 0 ? (
-                        allReceiveProducts
+                      {allProducts.length !== 0 ? (
+                        allProducts
                           .slice(
                             page * rowsPerPage,
                             page * rowsPerPage + rowsPerPage
@@ -236,9 +227,11 @@ export default function ReceiveCustomer(props) {
                                       type="submit"
                                       variant="contained"
                                       color="primary"
-                                      onClick={() => handleClick(prod)}
+                                      onClick={() =>
+                                        handleBuyButton(prod[0][0])
+                                      }
                                     >
-                                      RECEIVE
+                                      BUY
                                     </Button>
                                   </TableCell>
                                 </TableRow>
@@ -254,7 +247,7 @@ export default function ReceiveCustomer(props) {
                 <TablePagination
                   rowsPerPageOptions={[10, 25, 100]}
                   component="div"
-                  count={allReceiveProducts.length}
+                  count={allProducts.length}
                   rowsPerPage={rowsPerPage}
                   page={page}
                   onChangePage={handleChangePage}
@@ -263,7 +256,7 @@ export default function ReceiveCustomer(props) {
               </Paper>
             </div>
 
-            {/* {allReceiveProducts.length !== 0 ? (allReceiveProducts.map((prod) => (
+            {/* {allProducts.length !== 0 ? (allProducts.map((prod) => (
                 <>
                     <div>
                     <p>Universal ID : {prod[0][0]}</p>
@@ -280,9 +273,9 @@ export default function ReceiveCustomer(props) {
                 type="submit"
                 variant="contained"
                 color="primary"
-                onClick={() => handleClick(prod)}
+                onClick={() => handleBuyButton(prod[0][0])}
             >
-                Recieve
+                BUY
             </Button>
                     </div>
                     
