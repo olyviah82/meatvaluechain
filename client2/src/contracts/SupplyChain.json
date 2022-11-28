@@ -43339,7 +43339,7 @@
     }
   },
   "schemaVersion": "3.4.10",
-  "updatedAt": "2022-11-28T07:46:27.300Z",
+  "updatedAt": "2022-11-28T07:50:31.112Z",
   "devdoc": {
     "methods": {
       "fetchProductPart1(uint256,string,uint256)": {
